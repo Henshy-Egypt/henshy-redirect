@@ -24,7 +24,7 @@
     if (!clientSecret) {
       document.body.innerHTML = "<h3>❌ لا يوجد client_secret</h3>";
     } else {
-      const apiUrl = `https://myvmwawjbuitapdwpaly.supabase.co/functions/v1/paymob-redirect?client_secret=${clientSecret}`;
+       const apiUrl = `https://myvmwawjbuitapdwpaly.supabase.co/functions/v1/paymob-redirect?client_secret=${clientSecret}`;
       location.href = apiUrl;
     }
   </script>
