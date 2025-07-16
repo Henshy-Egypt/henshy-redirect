@@ -20,11 +20,11 @@
   <script>
     const params = new URLSearchParams(location.search);
     const clientSecret = params.get("client_secret");
+
     if (!clientSecret) {
       document.body.innerHTML = "<h3>❌ لا يوجد client_secret</h3>";
     } else {
-      // 🔁 تحويل إلى Edge Function (Supabase)
-      const apiUrl = `https://<your-project-id>.functions.supabase.co/paymob_redirect?client_secret=${clientSecret}`;
+      const apiUrl = `https://myvmwawjbuitapdwpaly.supabase.co/functions/v1/paymob-redirect?client_secret=${clientSecret}`;
       location.href = apiUrl;
     }
   </script>
