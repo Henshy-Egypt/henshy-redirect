@@ -1,32 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Redirecting...</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body { font-family: Arial; text-align: center; padding: 40px; }
-    .spinner { margin: 30px auto; width: 40px; height: 40px;
-      border: 4px solid #ccc; border-top: 4px solid #000;
-      border-radius: 50%; animation: spin 1s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
-</head>
-<body>
-  <h2>جارٍ معالجة البطاقة...</h2>
-  <div class="spinner"></div>
-  <p>يرجى الانتظار...</p>
-
-  <script>
-    const params = new URLSearchParams(location.search);
-    const clientSecret = params.get("client_secret");
-
-    if (!clientSecret) {
-      document.body.innerHTML = "<h3>❌ لا يوجد client_secret</h3>";
-    } else {
-       const apiUrl = `https://myvmwawjbuitapdwpaly.supabase.co/functions/v1/paymob-redirect?client_secret=${clientSecret}`;
-      location.href = apiUrl;
-    }
-  </script>
-</body>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Redirecting...</title>
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const secret = params.get("client_secret");
+      if (secret) {
+        window.location.href = `myapp://paymob-success?client_secret=${secret}`;
+      } else {
+        document.write("Missing client_secret");
+      }
+    </script>
+  </head>
+  <body>
+    <p>Redirecting to app...</p>
+  </body>
 </html>
