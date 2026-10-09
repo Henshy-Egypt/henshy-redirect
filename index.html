@@ -45,26 +45,50 @@
     }
   </style>
   <script>
-    const productId = new URLSearchParams(window.location.search).get("id");
-    const deepLink = `henshy://app/products/${productId}`;
-    const isAndroid = /android/i.test(navigator.userAgent);
-    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const params = new URLSearchParams(window.location.search);
+  const productId = params.get("id");
+  const deepLink = productId
+    ? `henshy://app/products/${productId}`
+    : "henshy://app";
 
-    const fallbackUrl = isAndroid
-      ? "https://play.google.com/store/apps/details?id=com.henshy.app"
-      : "https://apps.apple.com/app/id1234567890"; // غيّر الـ App Store ID هنا
+  const ua = navigator.userAgent;
 
-    function openApp() {
-      window.location = deepLink;
-      setTimeout(() => {
-        window.location = fallbackUrl;
-      }, 1500);
+  const isIOS =
+    /iphone|ipad|ipod/i.test(ua) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+  const isAndroid =
+    /android/i.test(ua) ||
+    (!isIOS && /Linux/i.test(ua) && navigator.maxTouchPoints > 0);
+
+  const fallbackUrl = isAndroid
+    ? "https://play.google.com/store/apps/details?id=com.henshy.app"
+    : isIOS
+      ? "https://apps.apple.com/app/id1234567890" // غيّر الـ ID
+      : "https://yoursite.com"; // صفحة بديلة للكمبيوتر
+
+  let timer;
+
+  function openApp() {
+    window.location = deepLink;
+    timer = setTimeout(() => {
+      window.location = fallbackUrl;
+    }, 1500);
+  }
+
+  // لو التطبيق اتفتح والصفحة اتخفت، الغي التحويل للمتجر
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) clearTimeout(timer);
+  });
+
+  window.addEventListener("load", () => {
+    if (isAndroid || isIOS) {
+      setTimeout(openApp, 500);
+    } else {
+      window.location = fallbackUrl;
     }
-
-    window.addEventListener("load", () => {
-      setTimeout(openApp, 500); // محاولة تلقائية بعد نصف ثانية
-    });
-  </script>
+  });
+</script>
 </head>
 <body>
   <div class="container">
