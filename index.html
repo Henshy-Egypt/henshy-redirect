@@ -10,14 +10,13 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
+      margin: 0;
       font-family: Arial, sans-serif;
       background-color: #ffffff;
       color: #333;
       text-align: center;
     }
-    .container {
-      max-width: 300px;
-    }
+    .container { max-width: 300px; }
     .spinner {
       margin: 20px auto;
       width: 40px;
@@ -27,9 +26,7 @@
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
     .btn {
       margin-top: 15px;
       padding: 10px 20px;
@@ -39,30 +36,68 @@
       border-radius: 6px;
       cursor: pointer;
       font-size: 14px;
+      text-decoration: none;
+      display: inline-block;
     }
-    .btn:hover {
-      background-color: #444;
-    }
+    .btn:hover { background-color: #444; }
+    #stores { display: none; }
   </style>
   <script>
-    const productId = new URLSearchParams(window.location.search).get("id");
-    const deepLink = `henshy://app/products/${productId}`;
-    const isAndroid = /android/i.test(navigator.userAgent);
-    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const params = new URLSearchParams(window.location.search);
+    const productId = params.get("id");
 
-    const fallbackUrl = isAndroid
-      ? "https://play.google.com/store/apps/details?id=com.henshy.app"
-      : "https://apps.apple.com/app/id1234567890"; // غيّر الـ App Store ID هنا
+    const PLAY_STORE = "https://play.google.com/store/apps/details?id=com.henshy.app";
+    const APP_STORE = "https://apps.apple.com/app/id1234567890"; // غيّر الـ App Store ID هنا
+    const deepLink = `henshy://app/products/${productId}`;
+
+    const ua = navigator.userAgent || "";
+    const isAndroid =
+      /android/i.test(ua) ||
+      (navigator.userAgentData && navigator.userAgentData.platform === "Android");
+    const isIOS =
+      /iphone|ipad|ipod/i.test(ua) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+    let fallbackTimer = null;
+
+    // لو التطبيق اتفتح (الصفحة اتخفت) نلغي التحويل للمتجر
+    function cancelFallback() {
+      if (fallbackTimer) {
+        clearTimeout(fallbackTimer);
+        fallbackTimer = null;
+      }
+    }
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) cancelFallback();
+    });
+    window.addEventListener("pagehide", cancelFallback);
+    window.addEventListener("blur", cancelFallback);
 
     function openApp() {
-      window.location = deepLink;
-      setTimeout(() => {
-        window.location = fallbackUrl;
-      }, 1500);
+      if (isAndroid) {
+        // Intent: بيفتح التطبيق، ولو مش متثبت بيروح للـ Play Store تلقائي
+        const intent =
+          `intent://app/products/${productId}` +
+          `#Intent;scheme=henshy;package=com.henshy.app;` +
+          `S.browser_fallback_url=${encodeURIComponent(PLAY_STORE)};end`;
+        window.location = intent;
+      } else if (isIOS) {
+        window.location = deepLink;
+        fallbackTimer = setTimeout(() => {
+          window.location = APP_STORE;
+        }, 1500);
+      } else {
+        // كمبيوتر أو جهاز مش معروف: نعرض الروابط بدل تحويل غلط
+        document.getElementById("stores").style.display = "block";
+      }
     }
 
     window.addEventListener("load", () => {
-      setTimeout(openApp, 500); // محاولة تلقائية بعد نصف ثانية
+      if (!isAndroid && !isIOS) {
+        document.getElementById("stores").style.display = "block";
+        return;
+      }
+      setTimeout(openApp, 500);
     });
   </script>
 </head>
@@ -73,6 +108,12 @@
     <div class="spinner"></div>
     <p>Redirecting... If it doesn't happen automatically, you can click the button below.</p>
     <button class="btn" onclick="openApp()">Open in App</button>
+
+    <div id="stores">
+      <p>Download the app:</p>
+      <a class="btn" href="https://play.google.com/store/apps/details?id=com.henshy.app">Google Play</a>
+      <a class="btn" href="https://apps.apple.com/app/id1234567890">App Store</a>
+    </div>
   </div>
 </body>
 </html>
